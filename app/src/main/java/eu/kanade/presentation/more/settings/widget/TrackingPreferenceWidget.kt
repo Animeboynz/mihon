@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.settings.widget
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,12 +29,13 @@ fun TrackingPreferenceWidget(
     tracker: Tracker,
     checked: Boolean,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val highlighted = LocalPreferenceHighlighted.current
     Box(modifier = Modifier.highlightBackground(highlighted)) {
         Row(
             modifier = modifier
-                .clickable(enabled = onClick != null, onClick = { onClick?.invoke() })
+                .combinedClickable(enabled = onClick != null, onClick = { onClick?.invoke() }, onLongClick = { onLongClick?.invoke() })
                 .fillMaxWidth()
                 .padding(horizontal = PrefsHorizontalPadding, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,

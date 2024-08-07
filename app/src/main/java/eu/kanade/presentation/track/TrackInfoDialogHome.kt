@@ -54,6 +54,7 @@ import eu.kanade.tachiyomi.data.track.Tracker
 import eu.kanade.tachiyomi.ui.manga.track.TrackItem
 import eu.kanade.tachiyomi.util.lang.toLocalDate
 import eu.kanade.tachiyomi.util.system.copyToClipboard
+import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
 import java.time.format.DateTimeFormatter
@@ -89,6 +90,7 @@ fun TrackInfoDialogHome(
                 TrackInfoItem(
                     title = item.track.title,
                     tracker = item.tracker,
+                    url = item.track.remoteUrl,
                     status = item.tracker.getStatus(item.track.status),
                     onStatusClick = { onStatusClick(item) },
                     chapters = "${item.track.lastChapterRead.toInt()}".let {
@@ -131,6 +133,7 @@ fun TrackInfoDialogHome(
 private fun TrackInfoItem(
     title: String,
     tracker: Tracker,
+    url: String,
     status: StringResource?,
     onStatusClick: () -> Unit,
     chapters: String,
@@ -153,6 +156,9 @@ private fun TrackInfoItem(
             TrackLogoIcon(
                 tracker = tracker,
                 onClick = onOpenInBrowser,
+                onLongClick = {
+                    context.copyToClipboard(url, url)
+                },
             )
             Box(
                 modifier = Modifier
