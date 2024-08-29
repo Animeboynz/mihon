@@ -11,10 +11,12 @@ import androidx.core.app.ActivityCompat
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.presentation.more.settings.Preference
+import eu.kanade.presentation.more.settings.screen.appearance.AppCustomThemeColorPickerScreen
 import eu.kanade.presentation.more.settings.screen.appearance.AppLanguageScreen
 import eu.kanade.presentation.more.settings.widget.AppThemeModePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.AppThemePreferenceWidget
@@ -29,6 +31,8 @@ import uy.kohesive.injekt.api.get
 import java.time.LocalDate
 
 object SettingsAppearanceScreen : SearchableSettings {
+
+    private fun readResolve(): Any = SettingsAppearanceScreen
 
     @ReadOnlyComposable
     @Composable
@@ -49,6 +53,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         uiPreferences: UiPreferences,
     ): Preference.PreferenceGroup {
         val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
 
         val themeModePref = uiPreferences.themeMode()
         val themeMode by themeModePref.collectAsState()
@@ -81,6 +86,12 @@ object SettingsAppearanceScreen : SearchableSettings {
                         )
                     }
                 },
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.pref_custom_color),
+                    enabled = appTheme == AppTheme.CUSTOM,
+                    subtitle = stringResource(MR.strings.custom_color_description),
+                    onClick = { navigator.push(AppCustomThemeColorPickerScreen()) },
+                ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = amoledPref,
                     title = stringResource(MR.strings.pref_dark_theme_pure_black),

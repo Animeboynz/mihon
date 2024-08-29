@@ -235,6 +235,7 @@ dependencies {
     implementation(libs.swipe)
     implementation(libs.compose.webview)
     implementation(libs.compose.grid)
+    implementation(compose.colorpicker)
 
     // Logging
     implementation(libs.logcat)

@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.AppTheme
 import eu.kanade.presentation.theme.colorscheme.BaseColorScheme
+import eu.kanade.presentation.theme.colorscheme.CustomColorScheme
 import eu.kanade.presentation.theme.colorscheme.GreenAppleColorScheme
 import eu.kanade.presentation.theme.colorscheme.LavenderColorScheme
 import eu.kanade.presentation.theme.colorscheme.MidnightDuskColorScheme
@@ -63,11 +64,21 @@ private fun getThemeColorScheme(
     appTheme: AppTheme,
     isAmoled: Boolean,
 ): ColorScheme {
-    val colorScheme = if (appTheme == AppTheme.MONET) {
-        MonetColorScheme(LocalContext.current)
-    } else {
-        colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
+    val uiPreferences = Injekt.get<UiPreferences>()
+    val colorScheme = when (appTheme) {
+        AppTheme.MONET -> {
+            MonetColorScheme(LocalContext.current)
+        }
+
+        AppTheme.CUSTOM -> {
+            CustomColorScheme(uiPreferences)
+        }
+
+        else -> {
+            colorSchemes.getOrDefault(appTheme, TachiyomiColorScheme)
+        }
     }
+
     return colorScheme.getColorScheme(
         isSystemInDarkTheme(),
         isAmoled,

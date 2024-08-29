@@ -91,6 +91,9 @@
     <!-- Monet theme only support S+ -->
     <style name="Theme.Tachiyomi.Monet" />
 
+    <!-- Custom Theme -->
+    <style name="Theme.Tachiyomi.Custom" />
+
     <!--== Green Apple Theme ==-->
     <style name="Theme.Tachiyomi.GreenApple">
         <!-- Theme Colors -->

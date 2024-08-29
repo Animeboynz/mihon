@@ -7,8 +7,10 @@
     <string name="off">Off</string>
     <string name="selected">Selected</string>
     <string name="not_selected">Not selected</string>
+    <string name="action_confirm">Confirm</string>
     <string name="action_menu_overflow_description">More options</string>
     <string name="action_bar_up_description">Navigate up</string>
+
 
     <!-- Models -->
     <string name="name">Name</string>
@@ -233,6 +235,9 @@
     <string name="theme_yotsuba">Yotsuba</string>
     <string name="theme_tidalwave">Tidal Wave</string>
     <string name="pref_dark_theme_pure_black">Pure black dark mode</string>
+    <string name="pref_custom_color">Palette Personalizer</string>
+    <string name="custom_color_description">Pick a color for the custom Theme</string>
+    <string name="theme_custom">Custom Theme</string>
     <string name="pref_relative_format">Relative timestamps</string>
     <!-- "Today" instead of "2023-12-31" -->
     <string name="pref_relative_format_summary">\"%1$s\" instead of \"%2$s\"</string>
