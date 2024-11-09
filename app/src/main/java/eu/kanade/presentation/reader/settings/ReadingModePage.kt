@@ -240,18 +240,6 @@ private fun ColumnScope.WebtoonViewerSettings(screenModel: ReaderSettingsScreenM
         onSelectInvertMode = screenModel.preferences.webtoonNavInverted()::set,
     )
 
-    val webtoonSidePadding by screenModel.preferences.webtoonSidePadding().collectAsState()
-    SliderItem(
-        label = stringResource(MR.strings.pref_webtoon_side_padding),
-        min = ReaderPreferences.WEBTOON_PADDING_MIN,
-        max = ReaderPreferences.WEBTOON_PADDING_MAX,
-        value = webtoonSidePadding,
-        valueText = numberFormat.format(webtoonSidePadding / 100f),
-        onChange = {
-            screenModel.preferences.webtoonSidePadding().set(it)
-        },
-    )
-
     CheckboxItem(
         label = stringResource(MR.strings.pref_crop_borders),
         pref = screenModel.preferences.cropBordersWebtoon(),
