@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.CropPortrait
 import androidx.compose.material.icons.rounded.CheckBox
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.DisabledByDefault
@@ -27,8 +29,11 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +57,9 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.header
 import tachiyomi.presentation.core.util.collectAsState
+import kotlin.Boolean
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 object SettingsItemsPaddings {
     val Horizontal = 24.dp
@@ -361,7 +369,12 @@ fun SettingsIconGrid(labelRes: StringResource, content: LazyGridScope.() -> Unit
 }
 
 @Composable
-fun SwitchItem(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+fun SwitchItem(
+    label: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    icon: @Composable (() -> Unit)? = null
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -369,11 +382,20 @@ fun SwitchItem(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> 
             .padding(start = 24.dp, end = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        icon?.let {
+            it()
+            Spacer(modifier = Modifier
+                //.width(8.dp)
+                .padding(start = 6.dp, end = 12.dp)
+            )
+        }
+
         Text(
             text = label,
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyLarge
         )
+
         Switch(
             checked = isChecked,
             onCheckedChange = onCheckedChange
@@ -381,6 +403,40 @@ fun SwitchItem(label: String, isChecked: Boolean, onCheckedChange: (Boolean) -> 
     }
 }
 
+@Composable
+fun SwitchItem(
+    label: String,
+    icon: @Composable (() -> Unit)? = null,
+    pref: Preference<Boolean>
+) {
+    val checked by pref.collectAsState()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .padding(start = 24.dp, end = 24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        icon?.let {
+            it()
+            Spacer(modifier = Modifier
+                //.width(8.dp)
+                .padding(start = 6.dp, end = 12.dp)
+            )
+        }
+
+        Text(
+            text = label,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Switch(
+            checked = checked,
+            onCheckedChange = { pref.toggle() },
+        )
+    }
+}
 
 @Composable
 private fun BaseSettingsItem(

@@ -1,112 +1,61 @@
 package eu.kanade.presentation.reader.settings.widget
 
-import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
-import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MultiChoiceSegmentedButtonRow
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.OnDeviceTraining
+import androidx.compose.material.icons.outlined.VerticalAlignCenter
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import eu.kanade.domain.ui.model.ThemeMode
-//import eu.kanade.presentation.reader.settings.updateOrientation
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderOrientation
+import androidx.compose.ui.res.painterResource
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.SettingsChipRow
 import tachiyomi.presentation.core.components.SwitchItem
 import tachiyomi.presentation.core.i18n.stringResource
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-
-private val options = mapOf(
-    ReaderOrientation.PORTRAIT to ReaderOrientation.PORTRAIT.stringRes,
-    ReaderOrientation.LANDSCAPE to ReaderOrientation.LANDSCAPE.stringRes,
-    //ReaderOrientation.LOCKED_PORTRAIT to ReaderOrientation.LANDSCAPE.stringRes,
-    //ReaderOrientation.LOCKED_LANDSCAPE to ReaderOrientation.LANDSCAPE.stringRes,
-    //ReaderOrientation.REVERSE_PORTRAIT to ReaderOrientation.LANDSCAPE.stringRes,
-    //ReaderOrientation.FREE to ReaderOrientation.LANDSCAPE.stringRes,
-)
 
 @Composable
-internal fun ReadingModeWidget(
-    value: ReaderOrientation,
-    onChange: (ReaderOrientation) -> Unit,
-) {
-    val isLockOrientationEnabled = remember { mutableStateOf(value == ReaderOrientation.LOCKED_PORTRAIT || value == ReaderOrientation.LOCKED_LANDSCAPE) }
-    val isReversePortraitEnabled = remember { mutableStateOf(value == ReaderOrientation.REVERSE_PORTRAIT) }
-
-    BasePreferenceWidget(
-        subcomponent = {
-            MultiChoiceSegmentedButtonRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = PrefsHorizontalPadding),
-            ) {
-                options.onEachIndexed { index, (mode, labelRes) ->
-                    SegmentedButton(
-                        checked = mode == value ||
-                            (mode == ReaderOrientation.PORTRAIT && value == ReaderOrientation.LOCKED_PORTRAIT) ||
-                            (mode == ReaderOrientation.LANDSCAPE && value == ReaderOrientation.LOCKED_LANDSCAPE),
-                        onCheckedChange = {
-                            val newValue = when {
-                                isLockOrientationEnabled.value && mode == ReaderOrientation.PORTRAIT -> ReaderOrientation.LOCKED_PORTRAIT
-                                isLockOrientationEnabled.value && mode == ReaderOrientation.LANDSCAPE -> ReaderOrientation.LOCKED_LANDSCAPE
-                                isReversePortraitEnabled.value && mode == ReaderOrientation.PORTRAIT -> ReaderOrientation.REVERSE_PORTRAIT
-                                else -> mode
-                            }
-                            onChange(newValue)
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index,
-                            options.size,
-                        ),
-                    ) {
-                        Text(stringResource(labelRes))
+internal fun ReadingModeWidget (
+    readingMode: ReadingMode,
+    screenModel: ReaderSettingsScreenModel
+){
+    SettingsChipRow(MR.strings.pref_category_reading_mode) {
+        ReadingMode.entries.map {
+            if (it != ReadingMode.CONTINUOUS_VERTICAL) {
+                FilterChip(
+                    selected = it == readingMode ||
+                        (it == ReadingMode.WEBTOON && readingMode == ReadingMode.CONTINUOUS_VERTICAL),
+                    onClick = { screenModel.onChangeReadingMode(it) },
+                    label = { Text(stringResource(it.stringRes)) },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = it.iconRes),
+                            contentDescription = "Localized description",
+                            Modifier.size(AssistChipDefaults.IconSize)
+                        )
                     }
-                }
+                )
             }
-        },
-    )
-
-    // Show "Reverse Portrait" switch only if Portrait or Locked Portrait is selected
-    if (value == ReaderOrientation.PORTRAIT || value == ReaderOrientation.LOCKED_PORTRAIT || value == ReaderOrientation.REVERSE_PORTRAIT) {
+        }
+    }
+    if (readingMode == ReadingMode.WEBTOON || readingMode == ReadingMode.CONTINUOUS_VERTICAL) {
         SwitchItem(
-            label = stringResource(MR.strings.rotation_reverse_portrait),
-            isChecked = isReversePortraitEnabled.value,
+            label = stringResource(ReadingMode.CONTINUOUS_VERTICAL.stringRes),
+            isChecked = (readingMode == ReadingMode.CONTINUOUS_VERTICAL),
             onCheckedChange = { isChecked ->
-                isReversePortraitEnabled.value = isChecked
-                val newOrientation = if (isChecked) ReaderOrientation.REVERSE_PORTRAIT else ReaderOrientation.PORTRAIT
-                onChange(
-                    if (isLockOrientationEnabled.value) ReaderOrientation.LOCKED_PORTRAIT else newOrientation
+                val newMode = if (isChecked) ReadingMode.CONTINUOUS_VERTICAL else ReadingMode.WEBTOON
+                screenModel.onChangeReadingMode(newMode)
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Outlined.VerticalAlignCenter,
+                    contentDescription = "OnDeviceTraining"
                 )
             }
         )
     }
-
-    // Lock Orientation switch
-    SwitchItem(
-        label = "Lock Orientation",
-        isChecked = isLockOrientationEnabled.value,
-        onCheckedChange = { isChecked ->
-            isLockOrientationEnabled.value = isChecked
-            val newOrientation = when {
-                isChecked && value == ReaderOrientation.PORTRAIT -> ReaderOrientation.LOCKED_PORTRAIT
-                isChecked && value == ReaderOrientation.LANDSCAPE -> ReaderOrientation.LOCKED_LANDSCAPE
-                isChecked && value == ReaderOrientation.REVERSE_PORTRAIT -> ReaderOrientation.LOCKED_PORTRAIT
-                else -> if (value == ReaderOrientation.LOCKED_PORTRAIT || value == ReaderOrientation.LOCKED_LANDSCAPE) {
-                    // Reset back to regular Portrait or Landscape when unlocking
-                    if (value == ReaderOrientation.LOCKED_PORTRAIT) ReaderOrientation.PORTRAIT else ReaderOrientation.LANDSCAPE
-                } else value
-            }
-            onChange(newOrientation)
-        }
-    )
-
-    fun valueChanged()
-    {
-
-    }
 }
-

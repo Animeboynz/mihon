@@ -190,8 +190,8 @@ class ReaderPreferences(
         val ZoomStart = listOf(
             MR.strings.zoom_start_automatic,
             MR.strings.zoom_start_left,
-            MR.strings.zoom_start_right,
             MR.strings.zoom_start_center,
+            MR.strings.zoom_start_right,
         )
 
         val ColorFilterMode = buildList {

@@ -1,24 +1,14 @@
 package eu.kanade.presentation.reader.settings
 
-import android.app.Activity
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.StayCurrentLandscape
-import androidx.compose.material.icons.filled.StayCurrentPortrait
+import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,31 +32,25 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import java.text.NumberFormat
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import eu.kanade.presentation.reader.settings.widget.ReadingOrientationWidget
+import tachiyomi.presentation.core.components.SwitchItem
+import androidx.compose.material.icons.filled.FitScreen
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.CropSquare
+import androidx.compose.material.icons.filled.PanoramaHorizontal
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
 import eu.kanade.presentation.reader.settings.widget.ReadingModeWidget
-import eu.kanade.tachiyomi.R
-import tachiyomi.presentation.core.components.SwitchItem
-import tachiyomi.presentation.core.components.material.Button
-import androidx.compose.material.icons.filled.FitScreen // Example icon for fit
-import androidx.compose.material.icons.filled.Image // Example icon for fill
-import androidx.compose.material.icons.filled.CropSquare // Example icon for crop
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Text
-import androidx.compose.ui.res.painterResource
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 
 @Composable
 internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel) {
@@ -76,41 +60,17 @@ internal fun ColumnScope.ReadingModePage(screenModel: ReaderSettingsScreenModel)
     val manga by screenModel.mangaFlow.collectAsState()
 
     val readingMode = remember(manga) { ReadingMode.fromPreference(manga?.readingMode?.toInt()) }
-    SettingsChipRow(MR.strings.pref_category_reading_mode) {
-        ReadingMode.entries.map {
-            if (it != ReadingMode.CONTINUOUS_VERTICAL) {
-                FilterChip(
-                    selected = it == readingMode ||
-                        (it == ReadingMode.WEBTOON && readingMode == ReadingMode.CONTINUOUS_VERTICAL),
-                    onClick = { screenModel.onChangeReadingMode(it) },
-                    label = { Text(stringResource(it.stringRes)) },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = it.iconRes),
-                            contentDescription = "Localized description",
-                            Modifier.size(AssistChipDefaults.IconSize)
-                        )
-                    }
-                )
-            }
-        }
-    }
-    if (readingMode == ReadingMode.WEBTOON || readingMode == ReadingMode.CONTINUOUS_VERTICAL) {
-        SwitchItem(
-            label = stringResource(ReadingMode.CONTINUOUS_VERTICAL.stringRes),
-            isChecked = (readingMode == ReadingMode.CONTINUOUS_VERTICAL),
-            onCheckedChange = { isChecked ->
-                val newMode = if (isChecked) ReadingMode.CONTINUOUS_VERTICAL else ReadingMode.WEBTOON
-                screenModel.onChangeReadingMode(newMode)
-            }
-        )
-    }
+
+    ReadingModeWidget(
+        readingMode = readingMode,
+        screenModel = screenModel
+    )
 
     HorizontalDivider()
 
     val orientation = remember(manga) { ReaderOrientation.fromPreference(manga?.readerOrientation?.toInt()) }
 
-    ReadingModeWidget(
+    ReadingOrientationWidget(
         value = orientation,
         onChange = { selectedOrientation ->
             screenModel.onChangeOrientation(selectedOrientation)
@@ -161,6 +121,87 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
         }
     }
 
+    SwitchItem(
+        label = stringResource(MR.strings.pref_crop_borders),
+        pref = screenModel.preferences.cropBorders(),
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Crop,
+                contentDescription = "ScreenLockRotation"
+            )
+        }
+    )
+
+    SwitchItem(
+        label = stringResource(MR.strings.pref_navigate_pan),
+        pref = screenModel.preferences.navigateToPan(),
+        icon = {
+            Icon(
+                imageVector = Icons.Default.PanoramaHorizontal,
+                contentDescription = "ScreenLockRotation"
+            )
+        }
+    )
+
+    HorizontalDivider()
+
+    val zoomStart by screenModel.preferences.zoomStart().collectAsState()
+
+//    SettingsChipRow(MR.strings.pref_zoom_start) {
+//        ReaderPreferences.ZoomStart.mapIndexed { index, it ->
+//            FilterChip(
+//                selected = zoomStart == index + 1,
+//                onClick = { screenModel.preferences.zoomStart().set(index + 1) },
+//                label = { Text(stringResource(it)) },
+//            )
+//        }
+//    }
+
+    SwitchItem(
+        label = "Automatic zoom start position",
+        isChecked = zoomStart == 1,
+        //onCheckedChange = { screenModel.preferences.zoomStart().set(1) },
+        onCheckedChange = {
+            if (zoomStart == 1) {
+                screenModel.preferences.zoomStart().set(2)
+            } else {
+                screenModel.preferences.zoomStart().set(1)
+            }
+        },
+    )
+
+    BasePreferenceWidget(
+        subcomponent = {
+            MultiChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PrefsHorizontalPadding),
+            ) {
+                ReaderPreferences.ZoomStart.mapIndexed { index, it ->
+                    if(it != MR.strings.zoom_start_automatic) {
+                        SegmentedButton(
+                            checked = zoomStart == index + 1,
+                            onCheckedChange = { screenModel.preferences.zoomStart().set(index + 1) },
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index - 1,
+                                ReaderPreferences.ZoomStart.size - 1,
+                            ),
+                        ) {
+                            Text(stringResource(it))
+                        }
+                    }
+                }
+            }
+        },
+    )
+
+    SwitchItem(
+        label = stringResource(MR.strings.pref_landscape_zoom),
+        pref = screenModel.preferences.landscapeZoom(),
+    )
+
+    HorizontalDivider()
+
     TapZonesItems(
         selected = navigationModePager,
         onSelect = screenModel.preferences.navigationModePager()::set,
@@ -168,31 +209,7 @@ private fun ColumnScope.PagerViewerSettings(screenModel: ReaderSettingsScreenMod
         onSelectInvertMode = screenModel.preferences.pagerNavInverted()::set,
     )
 
-    val zoomStart by screenModel.preferences.zoomStart().collectAsState()
-    SettingsChipRow(MR.strings.pref_zoom_start) {
-        ReaderPreferences.ZoomStart.mapIndexed { index, it ->
-            FilterChip(
-                selected = zoomStart == index + 1,
-                onClick = { screenModel.preferences.zoomStart().set(index + 1) },
-                label = { Text(stringResource(it)) },
-            )
-        }
-    }
-
-    CheckboxItem(
-        label = stringResource(MR.strings.pref_crop_borders),
-        pref = screenModel.preferences.cropBorders(),
-    )
-
-    CheckboxItem(
-        label = stringResource(MR.strings.pref_landscape_zoom),
-        pref = screenModel.preferences.landscapeZoom(),
-    )
-
-    CheckboxItem(
-        label = stringResource(MR.strings.pref_navigate_pan),
-        pref = screenModel.preferences.navigateToPan(),
-    )
+    HorizontalDivider()
 
     val dualPageSplitPaged by screenModel.preferences.dualPageSplitPaged().collectAsState()
     CheckboxItem(
@@ -283,25 +300,72 @@ private fun ColumnScope.TapZonesItems(
     invertMode: ReaderPreferences.TappingInvertMode,
     onSelectInvertMode: (ReaderPreferences.TappingInvertMode) -> Unit,
 ) {
-    SettingsChipRow(MR.strings.pref_viewer_nav) {
-        ReaderPreferences.TapZones.mapIndexed { index, it ->
-            FilterChip(
-                selected = selected == index,
-                onClick = { onSelect(index) },
-                label = { Text(stringResource(it)) },
-            )
-        }
-    }
+
+    SwitchItem(
+        label = "Enable Tap Zones",
+        isChecked = selected != 5,
+        onCheckedChange = {
+            if (selected != 5) {
+                onSelect(5)
+            } else {
+                onSelect(0)
+            }
+        },
+
+    )
 
     if (selected != 5) {
-        SettingsChipRow(MR.strings.pref_read_with_tapping_inverted) {
-            ReaderPreferences.TappingInvertMode.entries.map {
-                FilterChip(
-                    selected = it == invertMode,
-                    onClick = { onSelectInvertMode(it) },
-                    label = { Text(stringResource(it.titleRes)) },
-                )
+        SettingsChipRow(MR.strings.pref_viewer_nav) {
+            ReaderPreferences.TapZones.mapIndexed { index, it ->
+                if (index != 5) {
+                    FilterChip(
+                        selected = selected == index,
+                        onClick = { onSelect(index) },
+                        label = { Text(stringResource(it)) },
+                    )
+                }
             }
+        }
+
+        var shouldShow by remember { mutableStateOf(invertMode != ReaderPreferences.TappingInvertMode.NONE) }
+
+        SwitchItem(
+            label = stringResource(MR.strings.pref_read_with_tapping_inverted),
+            isChecked = shouldShow,
+            onCheckedChange = {
+                if (shouldShow) onSelectInvertMode(ReaderPreferences.TappingInvertMode.NONE)
+                shouldShow = !shouldShow
+            },
+        )
+
+        if (shouldShow) {
+            val options = mapOf(
+                ReaderPreferences.TappingInvertMode.BOTH to ReaderPreferences.TappingInvertMode.BOTH.titleRes,
+                ReaderPreferences.TappingInvertMode.HORIZONTAL to ReaderPreferences.TappingInvertMode.HORIZONTAL.titleRes,
+                ReaderPreferences.TappingInvertMode.VERTICAL to ReaderPreferences.TappingInvertMode.VERTICAL.titleRes,
+            )
+            BasePreferenceWidget(
+                subcomponent = {
+                    MultiChoiceSegmentedButtonRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = PrefsHorizontalPadding),
+                    ) {
+                        options.onEachIndexed { index, (mode, labelRes) ->
+                            SegmentedButton(
+                                checked = mode == invertMode,
+                                onCheckedChange = { onSelectInvertMode(mode) },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index,
+                                    options.size,
+                                ),
+                            ) {
+                                Text(stringResource(labelRes))
+                            }
+                        }
+                    }
+                },
+            )
         }
     }
 }
