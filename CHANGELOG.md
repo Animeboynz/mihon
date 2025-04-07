@@ -24,6 +24,7 @@ The format is a modified version of [Keep a Changelog](https://keepachangelog.co
 - Full predictive back support ([@AntsyLich](https://github.com/AntsyLich)) ([#2085](https://github.com/mihonapp/mihon/pull/2085))
 - Add Catppuccin theme (mocha for dark and latte for light, mauve accent) ([@claymorwan](https://github.com/claymorwan/)) ([#2117](https://github.com/mihonapp/mihon/pull/2117))
 - Allow for Export and Import of Custom Covers ([@Animeboynz](https://github.com/Animeboynz)) ([#1797](https://github.com/mihonapp/mihon/pull/1797))
+- Support for exporting and importing custom covers ([@Animeboynz](https://github.com/Animeboynz)) ([#1797](https://github.com/mihonapp/mihon/pull/1797))
 
 ### Improved
 - Significantly improve browsing speed (near instantaneous) ([@AntsyLich](https://github.com/AntsyLich)) ([#1946](https://github.com/mihonapp/mihon/pull/1946))
